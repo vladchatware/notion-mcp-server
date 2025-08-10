@@ -18,7 +18,7 @@ export async function startServer(args: string[] = process.argv) {
   // Parse command line arguments manually (similar to slack-mcp approach)
   function parseArgs() {
     const args = process.argv.slice(2);
-    let transport = 'stdio'; // default
+    let transport = 'http'; // default
     let port = 3000;
     let authToken: string | undefined;
 
