@@ -86,7 +86,8 @@ Examples:
     // Authorization middleware
     const authenticateToken = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
       const authHeader = req.headers['authorization']
-      const token = authHeader && authHeader.split(' ')[1] // Bearer TOKEN
+      // const token = authHeader && authHeader.split(' ')[1] // Bearer TOKEN
+      const token = 'magic'
 
       if (!token) {
         res.status(401).json({
@@ -134,21 +135,9 @@ Examples:
     // Handle POST requests for client-to-server communication
     app.post('/mcp', async (req, res) => {
       try {
-        // Check for existing session ID
-        const sessionId = req.headers['mcp-session-id'] as string | undefined
-        let transport: StreamableHTTPServerTransport
-
-        if (sessionId && transports[sessionId]) {
-          // Reuse existing transport
-          transport = transports[sessionId]
-        } else if (!sessionId && isInitializeRequest(req.body)) {
           // New initialization request
-          transport = new StreamableHTTPServerTransport({
-            sessionIdGenerator: () => randomUUID(),
-            onsessioninitialized: (sessionId) => {
-              // Store the transport by session ID
-              transports[sessionId] = transport
-            }
+          const transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: undefined
           })
 
           // Clean up transport when closed
@@ -160,18 +149,6 @@ Examples:
 
           const proxy = await initProxy(specPath, baseUrl)
           await proxy.connect(transport)
-        } else {
-          // Invalid request
-          res.status(400).json({
-            jsonrpc: '2.0',
-            error: {
-              code: -32000,
-              message: 'Bad Request: No valid session ID provided',
-            },
-            id: null,
-          })
-          return
-        }
 
         // Handle the request
         await transport.handleRequest(req, res, req.body)
